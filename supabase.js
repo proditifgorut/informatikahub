@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables (in production, these would come from actual env vars)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+// Get environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -117,7 +117,6 @@ export class SupabaseService {
             title,
             youtube_url,
             duration,
-            channel,
             order_index
           )
         `)
@@ -127,7 +126,7 @@ export class SupabaseService {
       return data || [];
     } catch (error) {
       console.error('Get courses error:', error);
-      return [];
+      throw error; // Re-throw to be caught by the caller
     }
   }
 
@@ -142,7 +141,6 @@ export class SupabaseService {
             title,
             youtube_url,
             duration,
-            channel,
             order_index
           )
         `)
@@ -162,13 +160,7 @@ export class SupabaseService {
     try {
       let query = this.supabase
         .from('templates')
-        .select(`
-          *,
-          categories (
-            id,
-            name
-          )
-        `)
+        .select(`*`) // Simplified query to avoid fetch errors
         .range(offset, offset + limit - 1)
         .order('created_at', { ascending: false });
 
@@ -181,7 +173,7 @@ export class SupabaseService {
       return data || [];
     } catch (error) {
       console.error('Get templates error:', error);
-      return [];
+      throw error; // Re-throw to be caught by the caller
     }
   }
 

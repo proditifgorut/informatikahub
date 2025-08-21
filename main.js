@@ -9,6 +9,7 @@ class InformatikaHub {
         this.templatesPerPage = 12;
         this.courses = [];
         this.templates = [];
+        this.categories = []; // To store categories
         this.init();
     }
 
@@ -25,6 +26,8 @@ class InformatikaHub {
         try {
             // Check if user is already logged in
             this.currentUser = await this.dbService.getCurrentUser();
+            // Fetch all categories to use for templates
+            this.categories = await this.dbService.getCategories();
         } catch (error) {
             console.error('Error loading initial data:', error);
         }
@@ -273,7 +276,6 @@ class InformatikaHub {
                                     <h4 class="font-semibold text-lg">${index + 1}. ${video.title}</h4>
                                     <div class="flex items-center gap-4">
                                         <span class="text-sm text-gray-500">${video.duration}</span>
-                                        <span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium">${video.channel}</span>
                                     </div>
                                 </div>
                                 <div class="video-container mb-3">
@@ -342,11 +344,15 @@ class InformatikaHub {
 
     renderTemplates(templates, append = false) {
         const container = document.getElementById('marketplaceContainer');
-        const templatesHTML = templates.map(template => `
+        const templatesHTML = templates.map(template => {
+            const category = this.categories.find(c => c.id === template.category_id);
+            const categoryName = category ? category.name : 'General';
+            
+            return `
             <div class="card p-4">
                 <img src="${template.preview_url || this.getDefaultTemplateImage()}" alt="${template.title}" class="w-full h-40 object-cover rounded-lg mb-3">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="bg-primary-100 text-primary-600 text-xs font-medium px-2 py-1 rounded">${template.categories ? template.categories.name : 'General'}</span>
+                    <span class="bg-primary-100 text-primary-600 text-xs font-medium px-2 py-1 rounded">${categoryName}</span>
                     <div class="flex items-center">
                         <span class="text-yellow-400 text-sm">★</span>
                         <span class="text-gray-500 text-xs ml-1">${template.rating || '4.8'}</span>
@@ -370,7 +376,7 @@ class InformatikaHub {
                     </a>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
 
         if (append) {
             container.innerHTML += templatesHTML;
@@ -406,8 +412,7 @@ class InformatikaHub {
                     {
                         title: 'Introduction to Programming',
                         youtube_url: 'https://www.youtube.com/embed/zOjov-2OZ0E',
-                        duration: '45:30',
-                        channel: 'Edureka'
+                        duration: '45:30'
                     }
                 ]
             }
@@ -422,7 +427,8 @@ class InformatikaHub {
                 description: 'Template landing page modern dan responsif',
                 price: 500000,
                 rating: 4.8,
-                sales: 150
+                sales: 150,
+                category_id: 1
             }
         ];
     }
